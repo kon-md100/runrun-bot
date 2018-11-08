@@ -2,8 +2,8 @@
 Splatoon 2 salmon run notification bot
 
 ## How to use
-1. install [Discord.py](https://github.com/Rapptz/discord.py)  
-`pip install discord`
+1. install [Discord.py](https://github.com/Rapptz/discord.py) , [Requests](https://github.com/requests/requests)  
+`pip install discord, Requests`
 
 2. https://discordapp.com/developers/applications/me  
 Get token and channel ID
