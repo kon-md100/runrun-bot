@@ -106,7 +106,7 @@ def change_presence():
     """
     次の鮭までの時間を表示
     """
-    nowplay = 0
+    nowplay = 0  # 初期化
     with open(PATH_SALMONRUNDATA, 'r') as f:
         json_data = json.load(f)
         poptime = datetime.datetime.strptime(
@@ -116,37 +116,41 @@ def change_presence():
 
     now = datetime.datetime.now()
     remaining_time = poptime - now + datetime.timedelta(minutes=1)
-    remaining_days = remaining_time.days
-    remaining_hours = remaining_time.seconds//3600
-    remaining_minutes = remaining_time.seconds % 3600//60
-    if (remaining_days > 0):
-        nowplay = "次は" + str(remaining_days) + "日" + \
-            str(remaining_hours) + "時間" + str(remaining_minutes) + "分後"
-    else:
-        if (remaining_time - datetime.timedelta(minutes=1) > datetime.timedelta(seconds=0)):
-            if (remaining_hours > 0):
-                nowplay = "次は" + str(remaining_hours) + "時間" + \
-                    str(remaining_minutes) + "分後"
-            else:
-                nowplay = str(remaining_minutes) + "分後"
+    if remaining_time.days < 0:
+        # 鮭が始まる前なら
+        after_time = now - endtime + datetime.timedelta(minutes=1)
+        # 次の鮭までの時間を求める
+        after_days = after_time.days
+        after_hours = after_time.seconds//3600
+        after_minutes = after_time.seconds % 3600//60
+        if (after_days > 0):
+            nowplay = "次は" + str(after_days) + "日" + \
+                str(after_hours) + "時間" + str(after_minutes) + "分後"
         else:
-            remaining_time = endtime - now + datetime.timedelta(minutes=1)
-            remaining_days = remaining_time.days
-            remaining_hours = remaining_time.seconds//3600
-            remaining_minutes = remaining_time.seconds % 3600//60
-            if (remaining_days > 0):
-                nowplay = "開催中：残り" + \
-                    str(remaining_days) + "日" + str(remaining_hours) + \
+            if (after_hours > 0):
+                nowplay = "次は" + str(after_hours) + "時間" + \
+                    str(after_minutes) + "分後"
+            else:
+                nowplay = str(after_minutes) + "分後"
+    else:
+        # 鮭が始まったら
+        remaining_time = endtime - now + datetime.timedelta(minutes=1)
+        # 残り時間を求める
+        remaining_days = remaining_time.days
+        remaining_hours = remaining_time.seconds//3600
+        remaining_minutes = remaining_time.seconds % 3600//60
+        if (remaining_time.days < 0):
+            download_salmondate()
+        if (remaining_time.days > 0):
+            nowplay = "開催中：残り" + \
+                str(remaining_days) + "日" + str(remaining_hours) + \
+                "時間" + str(remaining_minutes) + "分"
+        else:
+            if (remaining_hours > 0):
+                nowplay = "開催中：残り" + str(remaining_hours) + \
                     "時間" + str(remaining_minutes) + "分"
             else:
-                if (remaining_minutes > 0):
-                    if (remaining_hours > 0):
-                        nowplay = "開催中：残り" + str(remaining_hours) + \
-                            "時間" + str(remaining_minutes) + "分"
-                    else:
-                        nowplay = "開催中：残り" + str(remaining_minutes) + "分"
-                else:
-                    download_salmondate()
+                nowplay = "開催中：残り" + str(remaining_minutes) + "分"
 
     return nowplay
 
@@ -174,7 +178,7 @@ def show_salmon_date(date):
         end_date_str = end_date.strftime('%m/%d %H時')
         msg = start_date_str + end_date_str + "\n"
 
-        if salmon_date == 0:
+        if (salmon_date == 0):
             if (start_date - now).days < 0:
                 remaining_salmon_time = end_date - now
                 msg += '開催中：あと' + str(remaining_salmon_time.seconds//3600) + '時間' + str(
@@ -184,7 +188,7 @@ def show_salmon_date(date):
                 msg += 'あと' + str(remaining_salmon_time.seconds//3600) + '時間' + \
                     str(remaining_salmon_time.seconds % 3600//60) + '分後に開催\n'
 
-        elif salmon_date == 1:
+        elif (salmon_date == 1):
             after_salmon_time = start_date - now
             msg += 'あと' + str(after_salmon_time.seconds//3600) + '時間' + \
                 str(after_salmon_time.seconds % 3600//60) + '分後に開催\n'
@@ -248,10 +252,6 @@ def kon():
         msg += '俺が電波だ\n'
     return msg
 
-
-"""
-デバッグ用
-"""
 
 download_salmondate()
 download_wepon()
