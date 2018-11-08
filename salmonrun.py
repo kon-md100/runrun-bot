@@ -9,11 +9,11 @@ import random
 
 locale.setlocale(locale.LC_ALL, '')
 
-URL = 'https://spla2.yuu26.com/coop/schedule'
-WEAPON_URL = 'https://splatoon2.ink/data/locale/ja.json'
-HEADERS = {'User-Agent': 'runrunbot/1.0 (twitter @KON_md100)'}
-TOKEN = 'MzU3OTQyMjQ5Mjc2OTY0ODc0.DquLWg.GKun6e7ZFskvFFACUyVJV2HTbpw'
-CHANNEL = discord.Object(id=str(351380982068150272))
+SCHEDULE_URL = 'SCHEDULE_URL'
+WEAPON_URL = 'WEAPON_URL'
+HEADERS = {'User-Agent': 'YOUR_TWITTER_ACOUNT'}
+TOKEN = "YOUR_TOKEN"
+CHANNEL = discord.Object(id=str("CHANNEL_ID"))
 CLIENT = discord.Client()
 PATH_SALMONRUNDATA = 'tmp/salmonrun_data.json'
 PATH_WEAPONDATA = 'tmp/weapon.json'
@@ -58,9 +58,10 @@ async def salmon_processing():
             pass
         except TimeoutError:
             pass
-        with open (PATH_SALMONRUNDATA, 'r') as f:
+        with open(PATH_SALMONRUNDATA, 'r') as f:
             json_data = json.load(f)
-            poptime = datetime.datetime.strptime(json_data['result'][0]['start'], '%Y-%m-%dT%H:%M:%S')
+            poptime = datetime.datetime.strptime(
+                json_data['result'][0]['start'], '%Y-%m-%dT%H:%M:%S')
         nowtime = datetime.time(now.hour, now.minute)
         poptime = datetime.time(poptime.hour, poptime.minute)
         if (nowtime == poptime):
@@ -79,14 +80,13 @@ def download_salmondate():
     """
     鮭の予定をダウンロード
     """
-    r = requests.get(URL, headers=HEADERS)
+    r = requests.get(SCHEDULE_URL, headers=HEADERS)
     if r.status_code != 200:
         print('jsonが取得できませんでした')
         return False
     salmon_data = r.json()
     with open(PATH_SALMONRUNDATA, 'w') as f:
         json.dump(salmon_data, f, ensure_ascii=False, indent=2)
-
 
 
 def download_wepon():
@@ -100,7 +100,6 @@ def download_wepon():
     weapon_data = r.json()
     with open(PATH_WEAPONDATA, 'w') as f:
         json.dump(weapon_data, f, ensure_ascii=False, indent=2)
-        
 
 
 def change_presence():
@@ -108,7 +107,7 @@ def change_presence():
     次の鮭までの時間を表示
     """
     nowplay = 0
-    with open (PATH_SALMONRUNDATA, 'r') as f:
+    with open(PATH_SALMONRUNDATA, 'r') as f:
         json_data = json.load(f)
         poptime = datetime.datetime.strptime(
             json_data['result'][0]['start'], '%Y-%m-%dT%H:%M:%S')
@@ -165,7 +164,7 @@ def show_salmon_date(date):
         msg = "日時取得エラーです\n"
         return msg
 
-    with open (PATH_SALMONRUNDATA, 'r') as f:
+    with open(PATH_SALMONRUNDATA, 'r') as f:
         json_data = json.load(f)
         start_date = datetime.datetime.strptime(
             json_data['result'][salmon_date]['start'], '%Y-%m-%dT%H:%M:%S')
@@ -178,14 +177,17 @@ def show_salmon_date(date):
         if salmon_date == 0:
             if (start_date - now).days < 0:
                 remaining_salmon_time = end_date - now
-                msg += '開催中：あと' + str(remaining_salmon_time.seconds//3600) + '時間' + str(remaining_salmon_time.seconds%3600//60) + '分後に終了\n'
+                msg += '開催中：あと' + str(remaining_salmon_time.seconds//3600) + '時間' + str(
+                    remaining_salmon_time.seconds % 3600//60) + '分後に終了\n'
             else:
                 remaining_salmon_time = start_date - now
-                msg += 'あと' + str(remaining_salmon_time.seconds//3600) + '時間' + str(remaining_salmon_time.seconds%3600//60) + '分後に開催\n'
+                msg += 'あと' + str(remaining_salmon_time.seconds//3600) + '時間' + \
+                    str(remaining_salmon_time.seconds % 3600//60) + '分後に開催\n'
 
         elif salmon_date == 1:
             after_salmon_time = start_date - now
-            msg += 'あと' + str(after_salmon_time.seconds//3600) + '時間' + str(after_salmon_time.seconds%3600//60) + '分後に開催\n'
+            msg += 'あと' + str(after_salmon_time.seconds//3600) + '時間' + \
+                str(after_salmon_time.seconds % 3600//60) + '分後に開催\n'
 
         msg += "ステージ:\n\t" + \
             json_data['result'][salmon_date]['stage']['name'] + "\n"
@@ -197,7 +199,7 @@ def show_salmon_date(date):
 
 
 def omikuji_weapon():
-    with open (PATH_WEAPONDATA, 'r') as f:
+    with open(PATH_WEAPONDATA, 'r') as f:
         weapon_data = json.load(f)
         data = weapon_data['weapons']
     keys = list(data.keys())
@@ -219,7 +221,7 @@ def show_gusher_map():
                     '難破船ドン・ブラコ': 'https://pbs.twimg.com/media/Djp61D4U0AAZpvH.jpg:large',
                     'シェケナダム': 'https://pbs.twimg.com/media/DNv1wZYUIAAUQ0q.jpg:large',
                     '海上集落シャケト場': 'https://pbs.twimg.com/media/DNv1xZ8UMAAP4zv.jpg:large'}
-    with open (PATH_SALMONRUNDATA, 'r') as f:
+    with open(PATH_SALMONRUNDATA, 'r') as f:
         json_data = json.load(f)
         now_salmon_stage = json_data['result'][0]['stage']['name']
     try:
@@ -231,7 +233,7 @@ def show_gusher_map():
 
 def kon():
     random_freq = random.uniform(0, 10)
-    msg = '今日は{0:.1f}'.format(random_freq) + ' GHzな気持ち\nかんそう：' 
+    msg = '今日は{0:.1f}'.format(random_freq) + ' GHzな気持ち\nかんそう：'
     if random_freq < 1:
         msg += 'もうちょっと周波数上げましょう\n'
     elif random_freq < 3:
@@ -250,11 +252,8 @@ def kon():
 """
 デバッグ用
 """
-# print(show_salmon_date("now"))
-# print(show_salmon_date("later"))
-# print(change_presence())
 
-# download_salmondate()
-# download_wepon()
+download_salmondate()
+download_wepon()
 CLIENT.loop.create_task(salmon_processing())
 CLIENT.run(TOKEN)
