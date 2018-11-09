@@ -266,6 +266,8 @@ def kon():
         msg += '最高！どんな空間だって渡り歩けそう\n'
     elif random_freq < 10:
         msg += '俺が電波だ\n'
+    else:
+        msg += 'は？\n'
     return msg
 
 
