@@ -11,3 +11,4 @@ Get token and channel ID
  ## Environment
  python-3.6.7  
  discord.py==0.16.12
+ requests==2.20.1
