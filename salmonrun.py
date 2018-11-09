@@ -48,6 +48,7 @@ async def salmon_processing():
     """
     指定の時間に鮭のpopを通知する
     """
+    popflag = 0
     while True:
         await CLIENT.wait_until_ready()
         now = datetime.datetime.now()
@@ -58,15 +59,11 @@ async def salmon_processing():
             pass
         except TimeoutError:
             pass
-        with open(PATH_SALMONRUNDATA, 'r') as f:
-            json_data = json.load(f)
-            poptime = datetime.datetime.strptime(
-                json_data['result'][0]['start'], '%Y-%m-%dT%H:%M:%S')
-        nowtime = datetime.time(now.hour, now.minute)
-        poptime = datetime.time(poptime.hour, poptime.minute)
-        if (nowtime == poptime):
+
+        popflag = check_popflag()
+        if (popflag == 1):
             try:
-                await CLIENT.send_message(CHANNEL, show_salmon_date("now"))
+                await CLIENT.send_message(CHANNEL, show_salmon_date("new"))
             except AttributeError:
                 pass
             except TimeoutError:
@@ -139,7 +136,7 @@ def change_presence():
                 nowplay = "開催中：残り" + str(remaining_minutes) + "分"
     else:
         # 鮭が始まる前なら
-        after_time = now - endtime + datetime.timedelta(minutes=1)
+        after_time = endtime - now + datetime.timedelta(minutes=1)
         # 次の鮭までの時間を求める
         after_days = after_time.days
         after_hours = after_time.seconds//3600
@@ -167,7 +164,7 @@ def show_salmon_date(date):
     elif date == "later":
         salmon_date = 1
     else:
-        msg = "日時取得エラーです\n"
+        msg = "設定されていないkeyです\n"
         return msg
 
     with open(PATH_SALMONRUNDATA, 'r') as f:
@@ -269,6 +266,21 @@ def kon():
     else:
         msg += 'は？\n'
     return msg
+
+
+def check_popflag():
+    nowtime = datetime.datetime.now()
+    with open(PATH_SALMONRUNDATA, 'r') as f:
+        json_data = json.load(f)
+        poptime = datetime.datetime.strptime(
+            json_data['result'][0]['start'], '%Y-%m-%dT%H:%M:%S')
+    poptime_delta = poptime - nowtime
+    if ((poptime_delta - datetime.timedelta(minutes=1)).days >= 0 and poptime_delta.days < 0):
+        popflag = 1
+    else:
+        popflag = 0
+
+    return popflag
 
 
 download_salmondate()
